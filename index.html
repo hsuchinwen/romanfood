@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>香榭食代有限公司 | 專業冷凍食品批發・水餃・抓餅・小籠湯包製造代工</title>
+    <meta name="description" content="香榭食代有限公司專注於優質冷凍食品研發與批發，提供餐飲通路、團購、中盤商嚴選手工水餃、黃金抓餅、爆漿小籠湯包，嚴格溫控冷鏈配送。">
+    <link rel="icon" type="image/png" href="logo-mark.png">
+    
+    <!-- 導入 Noto Sans TC 與 Montserrat 字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;family=Noto+Sans+TC:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Montserrat"', '"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#fff7ed',
+                            100: '#ffedd5',
+                            500: '#f97316',
+                            600: '#ea580c',
+                            700: '#c2410c',
+                            dark: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .hero-bg {
+            background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), url('https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1920&q=80') center/cover no-repeat;
+        }
+        
+        /* 隱藏商品樣式 (一般模式完全消失，編輯模式變灰階半透明) */
+        .is-hidden-item {
+            display: none !important;
+        }
+        body.is-editing .is-hidden-item {
+            display: flex !important;
+            opacity: 0.35;
+            filter: grayscale(100%);
+        }
+        .visibility-toggle {
+            display: none;
+        }
+        body.is-editing .visibility-toggle {
+            display: flex;
+        }
+
+        .product-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px -8px rgba(15, 23, 42, 0.15);
+        }
+        .product-card .gallery-slide {
+            transition: transform 0.5s ease;
+        }
+        .product-card:hover .gallery-slide.is-active {
+            transform: scale(1.06);
+        }
+        .product-card > div:first-child {
+            aspect-ratio: 4 / 3;
+            width: 100%;
+            background-color: #f8fafc;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .gallery-slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: zoom-in;
+            padding: 0.5rem;
+        }
+        .gallery-slide.is-active {
+            display: block;
+        }
+        .gallery-slide.fit-contain {
+            object-fit: contain;
+        }
+        .is-editing .gallery-slide {
+            cursor: pointer;
+        }
+        .g-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 9999px;
+            border: 0;
+            background: rgba(15, 23, 42, 0.55);
+            color: #fff;
+            font-size: 20px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: background 0.15s;
+        }
+        .g-arrow:hover { background: rgba(15, 23, 42, 0.85); }
+        .g-prev { left: 8px; }
+        .g-next { right: 8px; }
+        .g-dots {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 8px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            z-index: 20;
+        }
+        .g-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 9999px;
+            border: 0;
+            padding: 0;
+            background: rgba(15, 23, 42, 0.25);
+            cursor: pointer;
+        }
+        .g-dot.active {
+            background: #ea580c;
+            width: 14px;
+        }
+        .g-count {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            font-size: 11px;
+            color: #fff;
+            background: rgba(15, 23, 42, 0.65);
+            padding: 1px 7px;
+            border-radius: 9999px;
+            z-index: 20;
+        }
+        .product-card .pc-edit-only {
+            display: none;
+        }
+        body.is-editing .product-card .pc-edit-only {
+            display: block;
+        }
+        body.is-editing .product-card {
+            cursor: default;
+        }
+        .lb {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(2, 6, 23, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .lb[hidden] { display: none; }
+        .lb-img {
+            max-width: 92vw;
+            max-height: 86vh;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .lb-btn {
+            position: absolute;
+            border: 0;
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            cursor: pointer;
+            border-radius: 9999px;
+            width: 44px;
+            height: 44px;
+            font-size: 28px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lb-btn:hover { background: rgba(255, 255, 255, 0.3); }
+        .lb-close { top: 16px; right: 16px; }
+        .lb-nav { top: 50%; transform: translateY(-50%); }
+        .lb-prev { left: 16px; }
+        .lb-next { right: 16px; }
+        .lb-count {
+            position: absolute;
+            bottom: 18px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #e2e8f0;
+            font-size: 13px;
+        }
+        body.is-editing [data-editable] {
+            outline: 2px dashed #f97316 !important;
+            outline-offset: 4px;
+            cursor: text;
+        }
+        body.is-editing [data-editable-img] {
+            outline: 3px dashed #3b82f6 !important;
+            cursor: pointer;
+            position: relative;
+        }
+        body.is-editing [data-editable-img]::after {
+            content: '📷 點擊更換照片';
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+        }
+        #product-detail { display: none; }
+        body.view-detail #product-detail { display: block; }
+        body.view-detail > section:not(#product-detail) { display: none; }
+        #product-detail .pd-main {
+            position: relative;
+            aspect-ratio: 1 / 1;
+            background: #f8fafc;
+            border-radius: 1rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        #product-detail .pd-main img.gallery-slide { cursor: zoom-in; }
+        #product-detail .pd-thumbs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+        #product-detail .pd-thumb {
+            flex: 0 0 auto;
+            width: 64px;
+            height: 64px;
+            border-radius: 0.5rem;
+            border: 2px solid #e2e8f0;
+            overflow: hidden;
+            background: #f8fafc;
+            padding: 0;
+            cursor: pointer;
+        }
+        #product-detail .pd-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        #product-detail .pd-thumb.active { border-color: #ea580c; }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:"Montserrat", "Noto Sans TC", sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.bottom-6{bottom:1.5rem}.left-0{left:0px}.left-3{left:0.75rem}.right-0{right:0px}.right-6{right:1.5rem}.top-0{top:0px}.top-3{top:0.75rem}.right-3{right:0.75rem}.z-10{z-index:10}.z-30{z-index:30}.z-40{z-index:40}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-14{margin-bottom:3.5rem}.mb-16{margin-bottom:4rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-5{margin-bottom:1.25rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-10{height:2.5rem}.h-12{height:3rem}.h-20{height:5rem}.h-9{height:2.25rem}.w-10{width:2.5rem}.w-12{width:3rem}.w-full{width:100%}.w-9{width:2.25rem}.max-w-2xl{max-width:42rem}.max-w-3xl{max-width:48rem}.max-w-6xl{max-width:72rem}.max-w-7xl{max-width:80rem}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1\.5{gap:0.375rem}.gap-12{gap:3rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.scroll-smooth{scroll-behavior:smooth}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-y{border-top-width:1px;border-bottom-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-amber-500\/30{border-color:rgb(245 158 11 / 0.3)}.border-brand-500\/30{border-color:rgb(249 115 22 / 0.3)}.border-brand-600{--tw-border-opacity:1;border-color:rgb(234 88 12 / var(--tw-border-opacity, 1))}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-900{--tw-border-opacity:1;border-color:rgb(15 23 42 / var(--tw-border-opacity, 1))}.border-white\/20{border-color:rgb(255 255 255 / 0.2)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-brand-500\/20{background-color:rgb(249 115 22 / 0.2)}.bg-brand-600{--tw-bg-opacity:1;background-color:rgb(234 88 12 / var(--tw-bg-opacity, 1))}.bg-emerald-100{--tw-bg-opacity:1;background-color:rgb(209 250 229 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-600{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.bg-orange-100{--tw-bg-opacity:1;background-color:rgb(255 237 213 / var(--tw-bg-opacity, 1))}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-50\/50{background-color:rgb(248 250 252 / 0.5)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/10{background-color:rgb(255 255 255 / 0.1)}.bg-white\/95{background-color:rgb(255 255 255 / 0.95)}.bg-slate-900\/90{background-color:rgb(15 23 42 / 0.9)}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-brand-500{--tw-gradient-from:#f97316 var(--tw-gradient-from-position);--tw-gradient-to:rgb(249 115 22 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-brand-600{--tw-gradient-to:#ea580c var(--tw-gradient-to-position)}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-20{padding-top:5rem;padding-bottom:5rem}.py-24{padding-top:6rem;padding-bottom:6rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.pb-12{padding-bottom:3rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.pt-6{padding-top:1.5rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-sans{font-family:"Montserrat", "Noto Sans TC", sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-\[10px\]{font-size:10px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-light{font-weight:300}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.tracking-widest{letter-spacing:0.1em}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-brand-100{--tw-text-opacity:1;color:rgb(255 237 213 / var(--tw-text-opacity, 1))}.text-brand-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-brand-600{--tw-text-opacity:1;color:rgb(234 88 12 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-slate-900{--tw-text-opacity:1;color:rgb(15 23 42 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-brand-600\/30{--tw-shadow-color:rgb(234 88 12 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-brand-600\/40{--tw-shadow-color:rgb(234 88 12 / 0.4);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.selection\:bg-brand-500 *::selection{--tw-bg-opacity:1;background-color:rgb(249 115 22 / var(--tw-bg-opacity, 1))}.selection\:text-white *::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.selection\:bg-brand-500::selection{--tw-bg-opacity:1;background-color:rgb(249 115 22 / var(--tw-bg-opacity, 1))}.selection\:text-white::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:-translate-y-0\.5:hover{--tw-translate-y:-0.125rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-brand-500\/30:hover{border-color:rgb(249 115 22 / 0.3)}.hover\:bg-black:hover{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.hover\:bg-brand-600:hover{--tw-bg-opacity:1;background-color:rgb(234 88 12 / var(--tw-bg-opacity, 1))}.hover\:bg-emerald-600:hover{--tw-bg-opacity:1;background-color:rgb(5 150 105 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-white\/20:hover{background-color:rgb(255 255 255 / 0.2)}.hover\:bg-slate-900:hover{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.hover\:from-brand-600:hover{--tw-gradient-from:#ea580c var(--tw-gradient-from-position);--tw-gradient-to:rgb(234 88 12 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.hover\:to-brand-700:hover{--tw-gradient-to:#c2410c var(--tw-gradient-to-position)}.hover\:text-brand-500:hover{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.hover\:text-brand-600:hover{--tw-text-opacity:1;color:rgb(234 88 12 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.focus\:border-brand-600:focus{--tw-border-opacity:1;border-color:rgb(234 88 12 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:gap-6{gap:1.5rem}.sm\:p-10{padding:2.5rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-left{text-align:left}.sm\:text-3xl{font-size:1.875rem;line-height:2.25rem}.sm\:text-5xl{font-size:3rem;line-height:1}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-xl{font-size:1.25rem;line-height:1.75rem}}@media (min-width: 768px){.md\:mt-0{margin-top:0px}.md\:flex{display:flex}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:items-end{align-items:flex-end}.md\:justify-start{justify-content:flex-start}.md\:py-14{padding-top:3.5rem;padding-bottom:3.5rem}.md\:py-32{padding-top:8rem;padding-bottom:8rem}.md\:text-left{text-align:left}}@media (min-width: 1024px){.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:col-span-7{grid-column:span 7 / span 7}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.lg\:gap-12{gap:3rem}.lg\:px-8{padding-left:2rem;padding-right:2rem}.lg\:text-6xl{font-size:3.75rem;line-height:1}}</style></head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-brand-500 selection:text-white pb-12">
+
+    <!-- 頂部管理工具列 -->
+    <aside id="editor-bar" class="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-700 text-white px-6 py-3.5 shadow-2xl transition-all hidden">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-sm">
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-semibold text-xs border border-amber-500/30">
+                    <i class="fa-solid fa-pen-ruler"></i> 網頁即時編輯中
+                </span>
+                <span class="text-xs text-slate-300 hidden sm:inline">直接點擊文字即可修改。點擊照片可替換！點擊卡片右上角「眼睛」可隱藏商品。</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleEditorMode(false)" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition">
+                    放棄變更並退出
+                </button>
+                <button onclick="saveAndExportHtml()" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> 儲存並匯出 HTML
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 頂部導航 -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur shadow-sm border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="logo-mark.png" alt="香榭食代有限公司標誌" style="height:3rem;width:auto" class="block">
+                <div>
+                    <span data-editable="" class="text-xl font-bold tracking-tight text-slate-900 block leading-tight" contenteditable="false" spellcheck="false">香榭食代有限公司</span>
+                    <span data-editable="" class="text-xs text-slate-500 tracking-wider" contenteditable="false" spellcheck="false">Roman Food CO., LTD.</span>
+                </div>
+            </div>
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+                <a href="#about" class="hover:text-brand-600 transition">關於我們</a>
+                <a href="#products" class="hover:text-brand-600 transition">主力型錄</a>
+                <a href="#advantages" class="hover:text-brand-600 transition">供應鏈優勢</a>
+                <a href="#inquiry" class="hover:text-brand-600 transition">批發詢價</a>
+                <a href="tel:0966166509" class="inline-flex items-center gap-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition shadow-sm transform hover:-translate-y-0.5">
+                    <i class="fa-solid fa-phone"></i> 業務專線洽詢
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主視覺 Hero Section -->
+    <section class="hero-bg text-white py-24 md:py-32 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center md:text-left">
+            <div class="max-w-3xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/20 border border-brand-500/30 text-brand-100 text-xs font-semibold mb-6">
+                    <i class="fa-solid fa-snowflake"></i> <span data-editable="" contenteditable="false" spellcheck="false">專業冷凍麵食調理批發・餐飲與團購首選夥伴</span>
+                </div>
+                <h1 data-editable="" class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6" contenteditable="false" spellcheck="false">紮實皮餡，鎖住鮮美。<br>
+                    香榭食代 給餐飲通路的安心美味
+                </h1>
+                <p data-editable="" class="text-base sm:text-lg text-slate-300 leading-relaxed mb-8 max-w-2xl font-light" contenteditable="false" spellcheck="false">
+                    嚴選在地安心食材與純淨冷鏈技術，專營手工水餃、香脆抓餅、爆汁小籠湯包大宗批發、營業用箱購與B2B大宗配送，為您的餐飲品牌提供穩定品質。
+                </p>
+                <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <a href="#products" class="bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg shadow-brand-600/40 transform transition hover:-translate-y-0.5 flex items-center gap-2">
+                        瀏覽產品型錄 <i class="fa-solid fa-arrow-down text-sm"></i>
+                    </a>
+                    <a href="#inquiry" class="bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold px-6 py-3.5 rounded-xl backdrop-blur transition flex items-center gap-2">
+                        索取業務報價單
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 關於我們 & 核心特色 -->
+    <section id="about" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-brand-600 font-bold mb-2">ABOUT US</h2>
+                <p data-editable="" class="text-3xl font-bold text-slate-900 tracking-tight" contenteditable="false" spellcheck="false">專注品質・穩定供貨的幕後推手</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:border-brand-500/30 transition">
+                    <div class="w-12 h-12 rounded-xl bg-orange-100 text-brand-600 flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-seedling"></i></div>
+                    <h3 data-editable="" class="text-lg font-bold text-slate-900 mb-3" contenteditable="false" spellcheck="false">在地嚴選優質食材</h3>
+                    <p data-editable="" class="text-sm text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">堅持使用產地直送新鮮時蔬與產銷履歷生鮮肉品，絕無防腐劑添加，完整保留食材原始甜味與彈性。</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:border-brand-500/30 transition">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-temperature-arrow-down"></i></div>
+                    <h3 data-editable="" class="text-lg font-bold text-slate-900 mb-3" contenteditable="false" spellcheck="false">急速冷凍極致保鮮</h3>
+                    <p data-editable="" class="text-sm text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">生產完成立即進入低溫急速冷凍隧道，鎖住湯汁與麵皮筋道，烹調時不易破皮、美味如現包。</p>
+                </div>
+                <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 hover:border-brand-500/30 transition">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-6"><i class="fa-solid fa-truck-ramp-box"></i></div>
+                    <h3 data-editable="" class="text-lg font-bold text-slate-900 mb-3" contenteditable="false" spellcheck="false">完善冷鏈出貨與倉儲</h3>
+                    <p data-editable="" class="text-sm text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">全程 -18°C 嚴格溫控倉儲與冷凍物流配送，不論餐飲門市定期補貨或經銷箱購皆能準時送達。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 產品型錄專區 -->
+    <section id="products" class="py-20 bg-slate-50 border-y border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-14">
+                <div>
+                    <h2 class="text-xs uppercase tracking-widest text-brand-600 font-bold mb-2">PRODUCT CATALOG</h2>
+                    <p data-editable="" class="text-3xl font-bold text-slate-900 tracking-tight" contenteditable="false" spellcheck="false">主力批發規格型錄</p>
+                </div>
+                <p data-editable="" class="text-sm text-slate-500 mt-2 md:mt-0" contenteditable="false" spellcheck="false">點擊任一商品卡片可查看完整規格與包裝說明</p>
+            </div>
+
+            <!-- 產品卡片網格 -->
+            <div id="product-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+                <!-- 產品 a -->
+                <div data-pid="a" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/a-1.jpg" alt="手工水餃 高麗菜口味 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/a-2.jpg" alt="手工水餃 韭菜口味 包裝" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/a-3.jpg" alt="手工水餃 擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/a-4.jpg" alt="手工水餃 內餡特寫" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/a-5.jpg" alt="手工水餃 成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <span data-editable="" class="absolute top-3 left-3 bg-brand-600 text-white text-xs font-bold px-2 py-0.5 rounded-md z-10" contenteditable="false" spellcheck="false">人氣熱銷</span>
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 4 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 5 張"></button></div><div class="g-ctrl g-count">1 / 5</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇巧阿在伯手工水餃</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約100粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">200</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">高麗菜豬肉 / 韭菜豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約100粒 /1800 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">皮薄 Q 彈有勁，久煮不破爛。特選生鮮後腿肉與脆甜高麗菜，黃金肥瘦比例，大顆飽滿多汁。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 b -->
+                <div data-pid="b" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/b-1.jpg" alt="手工蔥抓餅 包裝" class="gallery-slide fit-contain is-active">
+                        <span data-editable="" class="absolute top-3 left-3 bg-emerald-600 text-white text-xs font-bold px-2 py-0.5 rounded-md z-10" contenteditable="false" spellcheck="false">早餐餐飲必備</span>
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">阿在伯蔥抓餅</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包10片</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">90</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">手工蔥抓餅</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">10 片 / 1350 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">獨特多道摺疊工藝，乾煎免放油即香酥脆口。外層金黃香酥、內層柔軟絲絲分明，蔥香濃郁四溢。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 c -->
+                <div data-pid="c" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/c-1.jpg" alt="鮮肉湯包 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/c-2.jpg" alt="鮮肉湯包 圓潤飽滿與餡料特寫" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/c-3.jpg" alt="鮮肉湯包 成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <span data-editable="" class="absolute top-3 left-3 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-md z-10" contenteditable="false" spellcheck="false">爆漿多汁</span>
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津鮮肉湯包</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約50粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">150</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">鮮肉湯包</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 50 粒 / 1400 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">蒸煮 8 分鐘即食。薄透麵皮摺子緊緻，咬開瞬間醇厚高湯湧出，肉質鮮甜不油膩，餐飲店翻桌神器。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 d -->
+                <div data-pid="d" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/d-1.jpg" alt="冷凍熟鍋貼 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/d-2.jpg" alt="煎好的鍋貼 擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/d-3.jpg" alt="鍋貼 內餡剖面" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津冷凍熟鍋貼</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約50粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">高麗菜韭菜綜合</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 50 粒 / 1500 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">凍結前已加熱處理。平底鍋加少許油與水，蓋上鍋蓋煎約 6 分鐘，待外皮金黃即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 e -->
+                <div data-pid="e" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/e-1.jpg" alt="九層塔抓餅 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津九層塔抓餅</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包10片</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">全素</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">10 片 / 1350 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">九層塔香氣搭配多層次酥軟抓餅，包裝標示為全素，需冷凍保存。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 f -->
+                <div data-pid="f" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/f-1.jpg" alt="蛋餅皮 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/f-2.jpg" alt="蛋餅 捲餅成品" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button></div><div class="g-ctrl g-count">1 / 2</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">阿在伯蛋餅皮</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包30片</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">香蔥</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">30 片 / 1600 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">不必解凍，鍋熱加入少許油後煎至兩面金黃即可，可捲入蛋、火腿、鮪魚等一起食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 g -->
+                <div data-pid="g" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/g-1.jpg" alt="豬肉高麗菜水餃 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/g-2.jpg" alt="豬肉高麗菜水餃 煎餃成品" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button></div><div class="g-ctrl g-count">1 / 2</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇巧高麗菜熟水餃</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約100粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">高麗菜 / 豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 100 粒 / 1700 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">凍結前已加熱處理的熟水餃，可平底鍋煎或水煮食用，適合餐飲店快速出餐。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 h -->
+                <div data-pid="h" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/h-1.jpg" alt="清蒸肉圓 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/h-2.jpg" alt="肉圓 內餡特寫" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/h-3.jpg" alt="肉圓 料多飽滿示意" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠清蒸肉圓</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約50粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">400</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">台灣肉圓</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 50 粒 / 2500 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">Q 彈外皮包覆豬肉與筍塊內餡，水滾後放入蒸籠蒸約 8～10 分鐘即可食用，也可水煮或油炸。非即食商品，需充分加熱。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 i -->
+                <div data-pid="i" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/i-1.jpg" alt="上海生煎包 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/i-2.jpg" alt="生煎包 煎好的成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button></div><div class="g-ctrl g-count">1 / 2</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津上海生煎包</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約50粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">高麗菜 / 豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 50 粒 / 1400 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">不需解凍，平底鍋加少許油擺入生煎包，倒入水至約 1/3 高度，蓋上鍋蓋煎到水分收乾、底部金黃即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 j -->
+                <div data-pid="j" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/j-1.jpg" alt="一口珍珠餃 包裝（約 200 粒）" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/j-2.jpg" alt="一口珍珠餃 成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/j-3.jpg" alt="一口珍珠餃 夾起特寫" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津一口珍珠餃</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約200粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">120</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">高麗菜 / 豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 200 粒 / 1400 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">一口大小的冷凍熟水餃，水滾後下鍋煮約 2～3 分鐘，水餃浮起即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 k -->
+                <div data-pid="k" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/k-3.jpg" alt="蘿蔔糕 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/k-1.jpg" alt="蘿蔔糕 成品擺盤" class="gallery-slide fit-contain">
+                        <img data-editable-img="" src="images/k-2.jpg" alt="蘿蔔糕 疊放特寫" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇津港式蘿蔔糕</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包10片</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">80</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">港式</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">10 片 / 1000 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">表面煎至金黃香酥，可淋醬、撒蔥花享用，適合早餐店與小吃店備貨。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 l -->
+                <div data-pid="l" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/l-1.jpg" alt="冷凍雞堡 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/l-2.jpg" alt="雞堡 成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/l-3.jpg" alt="雞堡 內餡特寫" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠紐澳良冷凍雞堡</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包10片</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">120</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">紐澳良風味</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">10 片 / 650 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">紐澳良風味冷凍雞堡，非即食商品，需充分加熱後食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 m -->
+                <div data-pid="m" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/m-1.jpg" alt="讚岐烏龍麵 240 公克裝 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/m-2.jpg" alt="讚岐烏龍麵 外箱堆疊" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/m-3.jpg" alt="烏龍麵 料理示意" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">南僑讚岐烏龍麵 (240g)</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包5片/單片240g</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">150</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">急凍熟麵</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">240 公克 × 5 入 / 包</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">急速冷凍的熟烏龍麵，不須解凍，快煮 30 秒以內即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 n -->
+                <div data-pid="n" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/n-1.jpg" alt="讚岐烏龍麵 180 公克裝 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/n-2.jpg" alt="讚岐烏龍麵 外箱堆疊" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/n-3.jpg" alt="烏龍麵 料理示意" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">南僑讚岐烏龍麵 (180g)</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包5片/單片180g</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">120</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">急凍熟麵</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">180 公克 × 5 入 / 包</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">急速冷凍的熟烏龍麵，不須解凍，快煮 30 秒以內即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 o -->
+                <div data-pid="o" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/o-1.jpg" alt="義大利麵 三種口味包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/o-2.jpg" alt="柏士多青醬麵 包裝" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/o-3.jpg" alt="威尼斯紅醬麵 包裝" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/o-4.jpg" alt="諾曼地蒜香白醬麵 包裝" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 4 張"></button></div><div class="g-ctrl g-count">1 / 4</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠義大利麵系列</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">紅白青三種口味</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">30</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">威尼斯紅醬麵 | 諾曼地蒜香白醬麵 |柏士多青醬麵</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">麵體150g + 醬料120g / 包</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">三種醬麵口味可選，附麵條與醬包，方便餐廳與簡餐店備貨出餐。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 p -->
+                <div data-pid="p" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/p-1.jpg" alt="宜蘭蔥餡餅 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/p-2.jpg" alt="宜蘭蔥餡餅 成品擺盤" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button></div><div class="g-ctrl g-count">1 / 2</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠蔥餡餅</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約30粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">80</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">蔥肉餡</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 30 粒 / 840 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">平底鍋加熱後加少許油，放入餡餅以小火煎約 3～5 分鐘，煎至表皮金黃即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 q -->
+                <div data-pid="q" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/q-1.jpg" alt="新竹貢丸 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">雙匯新竹貢丸</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約120粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">400</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">貢丸</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約120粒 /3000 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">冷凍貢丸，不需解凍，直接加熱煮沸約 6 分鐘即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 r -->
+                <div data-pid="r" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/r-1.jpg" alt="花枝丸 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">金利花枝丸</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約120粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">400</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">花枝丸</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約120粒 /3000 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">冷凍花枝丸，不需解凍，直接加熱煮沸約 6 分鐘即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 s -->
+                <div data-pid="s" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/s-1.jpg" alt="玉米水餃 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/s-2.jpg" alt="泡菜豬肉水餃 包裝" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/s-3.jpg" alt="玉米水餃、泡菜水餃 成品示意" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠玉米/泡菜水餃</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約100粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">250</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">玉米豬肉 / 泡菜豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約100粒 /1800 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">皮薄 Q 彈有勁，小孩愛吃的玉米以及風味獨特泡菜兩種口味。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 t -->
+                <div data-pid="t" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/t-1.jpg" alt="冷凍雞塊 原味 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">紅龍冷凍雞塊</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約50粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">180</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">原味</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約 50 粒 / 1000 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">原味冷凍雞塊，屬非即食生品，需充分加熱後食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 u -->
+                <div data-pid="u" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/u-1.jpg" alt="鮮肉燒賣 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠鮮肉燒賣</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包12粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">100</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">豬肉</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">12粒 /360 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">盒裝冷凍燒賣，餐廳用港式茶點 | 宵夜點心。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 v -->
+                <div data-pid="v" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/v-1.jpg" alt="鮮蝦燒賣 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">源冠鮮蝦燒賣</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包12粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">120</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">豬肉 / 蝦</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">12粒 /360 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">盒裝冷凍燒賣，餐廳用港式茶點 | 宵夜點心。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 w -->
+                <div data-pid="w" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/w-1.jpg" alt="韓式泡菜 成品擺盤" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/w-2.jpg" alt="韓式泡菜 配飯" class="gallery-slide fit-contain" loading="lazy">
+                        <img data-editable-img="" src="images/w-3.jpg" alt="韓式泡菜 罐裝與夾起特寫" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 3 張"></button></div><div class="g-ctrl g-count">1 / 3</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">韓式泡菜</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一箱36斤/箱</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">3600</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">韓式辣白菜</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">36斤/箱</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">韓式風味泡菜，酸辣開胃，可直接佐餐，也可入菜料理。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 x -->
+                <div data-pid="x" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/x-1.jpg" alt="香蔥吉拿棒 包裝" class="gallery-slide fit-contain is-active">
+                    </div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇巧香蔥吉拿棒</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約30條</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">200</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">香蔥</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約30條 /1200 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">不須解凍，油溫 160°C 油炸 6～8 分鐘，或放入 180～200°C 烤箱烤約 6～9 分鐘即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 產品 y -->
+                <div data-pid="y" tabindex="0" role="link" class="product-card bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200/80 flex flex-col">
+                    <div data-gallery="">
+                        <img data-editable-img="" src="images/y-1.jpg" alt="一口吃 包裝" class="gallery-slide fit-contain is-active">
+                        <img data-editable-img="" src="images/y-2.jpg" alt="一口吃 煎好的成品" class="gallery-slide fit-contain" loading="lazy">
+                    <button class="g-ctrl g-arrow g-prev" type="button" aria-label="上一張">‹</button><button class="g-ctrl g-arrow g-next" type="button" aria-label="下一張">›</button><div class="g-ctrl g-dots"><button class="g-ctrl g-dot active" type="button" aria-label="第 1 張"></button><button class="g-ctrl g-dot" type="button" aria-label="第 2 張"></button></div><div class="g-ctrl g-count">1 / 2</div></div>
+                    <div class="p-4 text-center">
+                        <h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" contenteditable="false" spellcheck="false">奇巧一口吃湯包(一口煎餃)</h3><h3 data-editable="" class="text-base sm:text-lg font-semibold text-slate-900 mb-1" spellcheck="false" contenteditable="false">一包約100粒</h3>
+                        <div class="text-red-600 font-bold text-lg sm:text-xl">NT$<span data-editable="" data-price="" contenteditable="false" spellcheck="false">250</span></div>
+                        <div class="pc-edit-only mt-3 pt-3 border-t border-dashed border-slate-200 text-left text-xs space-y-2">
+                            <div><span class="text-slate-400 block text-[10px]">口味/類別：</span><span data-editable="" class="pc-flavor font-medium text-slate-700" contenteditable="false" spellcheck="false">一口煎餃 / 湯包</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">包裝規格：</span><span data-editable="" class="pc-spec font-medium text-slate-700" contenteditable="false" spellcheck="false">約100粒 /2000 g</span></div>
+                            <div><span class="text-slate-400 block text-[10px]">商品介紹：</span><p data-editable="" class="pc-desc text-slate-600 leading-relaxed" contenteditable="false" spellcheck="false">湯包做成小顆方便煎，夜市專用一口煎餃，平底鍋預熱後加少許油，放入產品並加少許水，水乾、底部煎至金黃即可食用。</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 商品詳細頁（第二頁） -->
+    <section id="product-detail" class="py-10 md:py-14 bg-white" aria-live="polite">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="text-sm text-slate-500 mb-6 flex flex-wrap items-center gap-2">
+                <a href="#" data-pd-back="" class="hover:text-brand-600">首頁</a><span>/</span>
+                <a href="#products" data-pd-back="" class="hover:text-brand-600">主力型錄</a><span>/</span>
+                <span id="pd-crumb" class="text-slate-800 font-medium">奇巧阿在伯手工水餃一包約100粒</span>
+            </nav>
+            <div class="grid md:grid-cols-2 gap-8 lg:gap-12 items-start">
+                <div>
+                    <div id="pd-main" class="pd-main"></div>
+                    <div id="pd-thumbs" class="pd-thumbs"></div>
+                </div>
+                <div>
+                    <span id="pd-badge" class="inline-block bg-brand-600 text-white text-xs font-bold px-2.5 py-1 rounded-md mb-3" style="">人氣熱銷</span>
+                    <h1 id="pd-title" class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">奇巧阿在伯手工水餃一包約100粒</h1>
+                    <p id="pd-flavor" class="text-sm text-slate-500 mb-5">高麗菜豬肉 / 韭菜豬肉</p>
+                    <div class="bg-slate-50 rounded-xl p-5 mb-6 text-sm space-y-3 border border-slate-100">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">包裝規格</span>
+                            <span id="pd-spec" class="font-semibold text-slate-800">約100粒 /1800 g</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-500">售價</span>
+                            <span id="pd-price" style="color:#e60012;font-size:1.8rem;font-weight:700;line-height:1.2">NT$ 200</span>
+                        </div>
+                    </div>
+                    <p id="pd-desc" class="text-slate-600 leading-relaxed mb-8">皮薄 Q 彈有勁，久煮不破爛。特選生鮮後腿肉與脆甜高麗菜，黃金肥瘦比例，大顆飽滿多汁。</p>
+                    <div class="grid sm:grid-cols-2 gap-3 mb-3">
+                        <a href="tel:0966166509" class="text-center py-3 rounded-lg bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-semibold transition shadow-sm transform hover:-translate-y-0.5"><i class="fa-solid fa-phone"></i> 電話洽詢 0966-166509</a>
+                        <a href="https://line.me/ti/p/~0966166509" target="_blank" rel="noopener" class="text-center py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition shadow-sm transform hover:-translate-y-0.5"><i class="fa-brands fa-line"></i> LINE 洽詢</a>
+                    </div>
+                    <a href="#inquiry" id="pd-inquiry" class="block text-center py-3 rounded-lg border border-brand-600 text-brand-600 hover:bg-brand-600 hover:text-white font-medium transition mb-3" data-item="奇巧阿在伯手工水餃一包約100粒">填寫批發／樣品需求單</a>
+                </div>
+            </div>
+            <div class="mt-12 pt-6 border-t border-slate-200 flex justify-between gap-4 text-sm">
+                <a id="pd-prev" href="#p/c" class="text-slate-600 hover:text-brand-600" style="visibility: hidden;">← 奇津鮮肉湯包</a>
+                <a href="#products" data-pd-back="" class="text-brand-600 font-medium text-center">← 返回全部商品</a>
+                <a id="pd-next" href="#p/b" class="text-slate-600 hover:text-brand-600 text-right">阿在伯蔥抓餅 →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 合作對象與供貨服務 -->
+    <section id="advantages" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-xs uppercase tracking-widest text-brand-600 font-bold mb-2">PARTNERSHIP</h2>
+                <p data-editable="" class="text-3xl font-bold text-slate-900 tracking-tight" contenteditable="false" spellcheck="false">多元通路合作・長期穩定供貨</p>
+            </div>
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/50 text-center">
+                    <i class="fa-solid fa-utensils text-2xl text-brand-600 mb-3"></i>
+                    <h4 data-editable="" class="font-bold text-slate-900 mb-1" contenteditable="false" spellcheck="false">早午餐・餐廳連鎖</h4>
+                    <p data-editable="" class="text-xs text-slate-500" contenteditable="false" spellcheck="false">標準化克重、覆熱迅速、穩定出餐品質</p>
+                </div>
+                <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/50 text-center">
+                    <i class="fa-solid fa-users text-2xl text-brand-600 mb-3"></i>
+                    <h4 data-editable="" class="font-bold text-slate-900 mb-1" contenteditable="false" spellcheck="false">團購主・社區團購</h4>
+                    <p data-editable="" class="text-xs text-slate-500" contenteditable="false" spellcheck="false">高回購率口碑食品，完整溫層配送支援</p>
+                </div>
+                <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/50 text-center">
+                    <i class="fa-solid fa-warehouse text-2xl text-brand-600 mb-3"></i>
+                    <h4 data-editable="" class="font-bold text-slate-900 mb-1" contenteditable="false" spellcheck="false">生鮮超市・食材行批發</h4>
+                    <p data-editable="" class="text-xs text-slate-500" contenteditable="false" spellcheck="false">箱裝大量供應，長期供貨價格具競爭力</p>
+                </div>
+                <div class="p-6 rounded-xl border border-slate-200 bg-slate-50/50 text-center">
+                    <i class="fa-solid fa-industry text-2xl text-brand-600 mb-3"></i>
+                    <h4 data-editable="" class="font-bold text-slate-900 mb-1" contenteditable="false" spellcheck="false">營業用箱購・B2B大宗配送</h4>
+                    <p data-editable="" class="text-xs text-slate-500" contenteditable="false" spellcheck="false">多元配送合作模式，符合客戶需求</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 詢價與聯絡專區 -->
+    <section id="inquiry" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-5 space-y-6">
+                    <span class="text-brand-500 font-bold text-xs uppercase tracking-widest">CONTACT &amp; INQUIRY</span>
+                    <h2 data-editable="" class="text-3xl font-bold tracking-tight" contenteditable="false" spellcheck="false">歡迎索取樣品或大量採購報價</h2>
+                    <p data-editable="" class="text-slate-400 text-sm leading-relaxed font-light" contenteditable="false" spellcheck="false">不論您是餐飲開店、批發採購或團購主，請直接撥打電話或填寫右方表單，我們將有業務專員在 24 小時內與您聯繫。</p>
+                    <div class="space-y-4 pt-4 border-t border-slate-800 text-sm">
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-brand-500"><i class="fa-solid fa-phone"></i></div>
+                            <div><div class="text-xs text-slate-400">業務聯絡專線</div><a href="tel:0966166509" data-editable="" class="text-lg font-semibold text-white hover:text-brand-500 transition" contenteditable="false" spellcheck="false">0966-166509</a></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-emerald-400"><i class="fa-brands fa-line text-xl"></i></div>
+                            <div><div class="text-xs text-slate-400">官方 LINE 諮詢</div><div data-editable="" class="font-medium text-white" contenteditable="false" spellcheck="false">搜尋電話 0966166509 或點擊右下角按鈕</div></div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-blue-400"><i class="fa-solid fa-building"></i></div>
+                            <div><div class="text-xs text-slate-400">公司全銜</div><div data-editable="" class="font-medium text-white" contenteditable="false" spellcheck="false">香榭食代有限公司</div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-7 bg-white text-slate-900 p-8 sm:p-10 rounded-2xl shadow-xl">
+                    <h3 data-editable="" class="text-xl font-bold text-slate-900 mb-6" contenteditable="false" spellcheck="false">填寫批發 / 樣品需求單</h3>
+                    <form id="inquiry-form" action="https://formspree.io/f/xjygedwz" method="POST" onsubmit="handleFormSubmit(event)" class="space-y-4 text-sm">
+                        <input type="hidden" name="_subject" value="香榭食代官網：新的批發／樣品詢價">
+                        <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div><label class="block font-medium text-slate-700 mb-1">寶號 / 聯絡人姓名 *</label><input name="name" type="text" required="" placeholder="例如：陳老闆 / 好吃小吃店" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-brand-600 transition"></div>
+                            <div><label class="block font-medium text-slate-700 mb-1">聯絡電話 *</label><input name="phone" type="tel" required="" placeholder="例如：0912-345678" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-brand-600 transition"></div>
+                        </div>
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block font-medium text-slate-700 mb-1">通路型態</label>
+                                <select name="channel" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-brand-600 transition bg-white">
+                                    <option>餐飲店 / 早餐店</option><option>團購主 / 團購門市</option><option>食材經銷 / 批發商</option><option>一般大宗採購 / 公司福委會</option><option>其他</option>
+                                </select>
+                            </div>
+                            <div><label class="block font-medium text-slate-700 mb-1">預估需求品項</label><input name="items" type="text" placeholder="例如：水餃 5 箱、抓餅 3 箱" class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-brand-600 transition"></div>
+                        </div>
+                        <div><label class="block font-medium text-slate-700 mb-1">配送區域或詳細需求</label><textarea name="message" rows="3" placeholder="請填寫配送縣市或索取樣品相關疑問..." class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:border-brand-600 transition"></textarea></div>
+                        <button type="submit" class="w-full py-3.5 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 text-white font-bold rounded-xl transition shadow-md shadow-brand-600/30 transform hover:-translate-y-0.5">送出詢價需求</button>
+                        <p id="form-status" role="status" aria-live="polite" class="text-sm text-center" style="min-height:1.25rem"></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁尾 Footer -->
+    <footer class="bg-slate-950 text-slate-500 py-12 text-xs border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row items-center gap-4">
+                <img src="logo-full.png" alt="香榭食代有限公司" style="height:5rem;width:auto;background:#fff;border-radius:.5rem;padding:.4rem">
+                <div>
+                    <p data-editable="" class="font-medium text-slate-400" contenteditable="false" spellcheck="false">香榭食代有限公司 Roman Food CO., LTD.</p>
+                    <p data-editable="" class="mt-1 font-light" contenteditable="false" spellcheck="false">業務聯絡專線：0966-166509 | 冷凍水餃・抓餅・小籠湯包大宗批發</p>
+                </div>
+            </div>
+            <p class="font-light">© 2026 香榭食代有限公司 版權所有</p>
+        </div>
+    </footer>
+
+    <!-- 右下角固定懸浮聯絡按鈕 -->
+    <div id="floating-actions" class="fixed bottom-6 right-6 z-40 flex flex-col gap-3">
+        <!-- 進入編輯模式開關按鈕 (老闆專用版預設顯示，匯出時會自動隱藏) -->
+        <button id="btn-open-editor" onclick="toggleEditorMode(true)" class="w-13 h-13 p-3.5 rounded-full bg-slate-900 text-amber-400 shadow-xl flex items-center justify-center hover:bg-black transition transform hover:scale-105 border border-slate-700 hidden" title="點擊進入直接編輯模式">
+            <i class="fa-solid fa-pen text-lg"></i>
+        </button>
+        <a href="https://line.me/ti/p/~0966166509" target="_blank" class="w-13 h-13 p-3.5 rounded-full bg-emerald-500 text-white shadow-xl flex items-center justify-center hover:bg-emerald-600 transition transform hover:scale-105" title="加 LINE 洽詢"><i class="fa-brands fa-line text-2xl"></i></a>
+        <a href="tel:0966166509" class="w-13 h-13 p-3.5 rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-xl flex items-center justify-center hover:from-brand-600 hover:to-brand-700 transition transform hover:scale-105" title="撥打業務專線"><i class="fa-solid fa-phone text-xl"></i></a>
+    </div>
+
+    <!-- 隱藏的檔案選擇器 -->
+    <input type="file" id="hidden-file-input" accept="image/*" class="hidden">
+
+    <!-- 所見即所得編輯腳本 -->
+    <script>
+        let isEditing = false;
+        let activeImageElement = null;
+
+        const fileInput = document.getElementById('hidden-file-input');
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && activeImageElement) {
+                const reader = new FileReader();
+                reader.onload = function(evt) { activeImageElement.src = evt.target.result; };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 初始化商品隱藏/顯示的按鈕
+        function initVisibilityToggles() {
+            document.querySelectorAll('.product-card').forEach(card => {
+                if (card.querySelector('.visibility-toggle')) return; // 避免重複加入
+                
+                let toggleBtn = document.createElement('button');
+                toggleBtn.type = 'button';
+                toggleBtn.className = 'visibility-toggle absolute top-3 right-3 w-9 h-9 rounded-full bg-slate-900/90 text-white z-30 items-center justify-center hover:bg-slate-900 transition shadow-lg border border-slate-700';
+                toggleBtn.title = "隱藏 / 顯示此商品";
+                
+                const updateIcon = () => {
+                    if (card.classList.contains('is-hidden-item')) {
+                        toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash text-red-500"></i>';
+                    } else {
+                        toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i>';
+                    }
+                };
+                updateIcon();
+
+                toggleBtn.addEventListener('click', function(e) {
+                    if (!document.body.classList.contains('is-editing')) return;
+                    e.stopPropagation();
+                    e.preventDefault();
+                    card.classList.toggle('is-hidden-item');
+                    updateIcon();
+                });
+
+                let imgWrap = card.querySelector('[data-gallery]');
+                if(imgWrap) imgWrap.appendChild(toggleBtn);
+            });
+        }
+
+        function toggleEditorMode(enable) {
+            isEditing = enable;
+            const editorBar = document.getElementById('editor-bar');
+            const openBtn = document.getElementById('btn-open-editor');
+            const editables = document.querySelectorAll('[data-editable]');
+            const editableImgs = document.querySelectorAll('[data-editable-img]');
+
+            if (enable) {
+                document.body.classList.add('is-editing');
+                editorBar.classList.remove('hidden');
+                openBtn.classList.add('hidden');
+                
+                initVisibilityToggles(); // 進入編輯模式時確保按鈕存在
+
+                editables.forEach(el => { el.contentEditable = "true"; el.spellcheck = false; });
+                editableImgs.forEach(img => {
+                    img.onclick = function() { if (!isEditing) return; activeImageElement = this; fileInput.click(); };
+                });
+            } else {
+                document.body.classList.remove('is-editing');
+                editorBar.classList.add('hidden');
+                openBtn.classList.remove('hidden'); 
+                editables.forEach(el => { el.contentEditable = "false"; });
+            }
+        }
+
+        function saveAndExportHtml() {
+            const editables = document.querySelectorAll('[data-editable]');
+            editables.forEach(el => el.contentEditable = "false");
+            document.body.classList.remove('is-editing');
+            document.getElementById('editor-bar').classList.add('hidden');
+            
+            // 匯出時強制隱藏畫筆按鈕，確保上傳的檔案是乾淨的
+            document.getElementById('btn-open-editor').classList.add('hidden'); 
+            
+            // 匯出前移除動態產生的眼睛按鈕，避免重複存入 HTML
+            document.querySelectorAll('.visibility-toggle').forEach(el => el.remove());
+
+            const currentHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const blob = new Blob([currentHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'index.html';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('✅ 已成功匯出更新後的 index.html！\n請直接使用下載好的新檔案取代舊檔案即可。');
+            
+            // 匯出完成後，恢復老闆版的按鈕顯示狀態
+            document.getElementById('btn-open-editor').classList.remove('hidden'); 
+            initVisibilityToggles();
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            var form = e.target;
+            var btn = form.querySelector('button[type="submit"]');
+            var status = document.getElementById('form-status');
+            var label = btn.textContent;
+            btn.disabled = true; btn.textContent = '送出中...';
+            status.style.color = '#64748b'; status.textContent = '';
+            try {
+                var res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { 'Accept': 'application/json' } });
+                if (res.ok) {
+                    form.reset(); status.style.color = '#15803d'; status.textContent = '感謝您的詢價！我們已收到您的需求，業務專員將盡快透過 0966-166509 與您聯繫確認報價。';
+                } else { throw new Error('http ' + res.status); }
+            } catch (err) {
+                status.style.color = '#b91c1c'; status.textContent = '送出失敗，請稍後再試，或直接來電 0966-166509。';
+            } finally { btn.disabled = false; btn.textContent = label; }
+        }
+    </script>
+
+    <!-- 相簿與 Lightbox 邏輯 -->
+    <script>
+        (function () {
+            document.querySelectorAll('.g-ctrl, .lb').forEach(function (n) { n.remove(); });
+            var lb = document.createElement('div');
+            lb.id = 'lightbox'; lb.className = 'lb'; lb.hidden = true;
+            lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true'); lb.setAttribute('aria-label', '商品圖片檢視');
+            lb.innerHTML = '<button type="button" class="lb-btn lb-close" aria-label="關閉">&times;</button><button type="button" class="lb-btn lb-nav lb-prev" aria-label="上一張">&#8249;</button><img class="lb-img" alt=""><button type="button" class="lb-btn lb-nav lb-next" aria-label="下一張">&#8250;</button><div class="lb-count"></div>';
+            document.body.appendChild(lb);
+            var lbImg = lb.querySelector('.lb-img'), lbCount = lb.querySelector('.lb-count');
+            var lbPrev = lb.querySelector('.lb-prev'), lbNext = lb.querySelector('.lb-next');
+            var cur = null, curIdx = 0;
+            function lbShow(i) {
+                var n = cur.slides.length; curIdx = (i + n) % n; var s = cur.slides[curIdx];
+                lbImg.src = s.getAttribute('src'); lbImg.alt = s.alt;
+                lbCount.textContent = n > 1 ? (curIdx + 1) + ' / ' + n : '';
+                lbPrev.style.display = lbNext.style.display = n > 1 ? '' : 'none';
+            }
+            function lbOpen(g, i) { cur = g; lb.hidden = false; document.body.style.overflow = 'hidden'; lbShow(i); lb.querySelector('.lb-close').focus(); }
+            function lbClose() { lb.hidden = true; document.body.style.overflow = ''; if (cur) { cur.show(curIdx); } }
+            lb.querySelector('.lb-close').addEventListener('click', lbClose);
+            lbPrev.addEventListener('click', function () { lbShow(curIdx - 1); });
+            lbNext.addEventListener('click', function () { lbShow(curIdx + 1); });
+            lb.addEventListener('click', function (e) { if (e.target === lb) lbClose(); });
+            document.addEventListener('keydown', function (e) {
+                if (lb.hidden) return;
+                if (e.key === 'Escape') lbClose(); else if (e.key === 'ArrowLeft') lbShow(curIdx - 1); else if (e.key === 'ArrowRight') lbShow(curIdx + 1);
+            });
+            function swipe(el, onPrev, onNext) {
+                var x0 = null;
+                el.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+                el.addEventListener('touchend', function (e) { if (x0 === null) return; var dx = e.changedTouches[0].clientX - x0; x0 = null; if (Math.abs(dx) > 40) { dx > 0 ? onPrev() : onNext(); } }, { passive: true });
+            }
+            swipe(lb, function () { lbShow(curIdx - 1); }, function () { lbShow(curIdx + 1); });
+            function mk(tag, cls, html, label) { var el = document.createElement(tag); el.className = 'g-ctrl ' + cls; if (tag === 'button') el.type = 'button'; if (html) el.innerHTML = html; if (label) el.setAttribute('aria-label', label); return el; }
+            document.querySelectorAll('[data-gallery]').forEach(function (box) {
+                var slides = [].slice.call(box.querySelectorAll('.gallery-slide'));
+                var g = { slides: slides, idx: 0, show: null };
+                var dots = [], count = null;
+                function show(i) {
+                    g.idx = (i + slides.length) % slides.length;
+                    slides.forEach(function (s, j) { s.classList.toggle('is-active', j === g.idx); });
+                    dots.forEach(function (d, j) { d.classList.toggle('active', j === g.idx); });
+                    if (count) count.textContent = (g.idx + 1) + ' / ' + slides.length;
+                }
+                g.show = show;
+                if (slides.length > 1) {
+                    var prev = mk('button', 'g-arrow g-prev', '&#8249;', '上一張');
+                    var next = mk('button', 'g-arrow g-next', '&#8250;', '下一張');
+                    var dotWrap = mk('div', 'g-dots');
+                    slides.forEach(function (_, j) { var d = mk('button', 'g-dot', '', '第 ' + (j + 1) + ' 張'); d.addEventListener('click', function () { show(j); }); dots.push(d); dotWrap.appendChild(d); });
+                    count = mk('div', 'g-count');
+                    prev.addEventListener('click', function () { show(g.idx - 1); }); next.addEventListener('click', function () { show(g.idx + 1); });
+                    box.appendChild(prev); box.appendChild(next); box.appendChild(dotWrap); box.appendChild(count);
+                    swipe(box, function () { show(g.idx - 1); }, function () { show(g.idx + 1); });
+                }
+                
+                slides.forEach(function (img) { 
+                    img.addEventListener('click', function (e) { 
+                        if (document.body.classList.contains('is-editing')) return; 
+                        if (e.ctrlKey || e.metaKey) return; 
+                        e.stopPropagation(); 
+                        lbOpen(g, g.idx); 
+                    }); 
+                });
+                
+                show(0);
+            });
+        })();
+    </script><div id="lightbox" class="lb" hidden="" role="dialog" aria-modal="true" aria-label="商品圖片檢視"><button type="button" class="lb-btn lb-close" aria-label="關閉">×</button><button type="button" class="lb-btn lb-nav lb-prev" aria-label="上一張">‹</button><img class="lb-img" alt=""><button type="button" class="lb-btn lb-nav lb-next" aria-label="下一張">›</button><div class="lb-count"></div></div>
+
+    <!-- 商品詳細頁（第二頁）及路由邏輯 -->
+    <script>
+        (function () {
+            var body = document.body, grid = document.getElementById('product-grid');
+            var detail = document.getElementById('product-detail');
+            var baseTitle = document.title, savedY = 0, curImgs = [], curIdx = 0;
+            var old = document.getElementById('dlb'); if (old) old.remove();
+            var lb = document.createElement('div');
+            lb.id = 'dlb'; lb.className = 'lb'; lb.hidden = true; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-modal', 'true');
+            lb.innerHTML = '<button type="button" class="lb-btn lb-close" aria-label="關閉">&times;</button><button type="button" class="lb-btn lb-nav lb-prev" aria-label="上一張">&#8249;</button><img class="lb-img" alt=""><button type="button" class="lb-btn lb-nav lb-next" aria-label="下一張">&#8250;</button><div class="lb-count"></div>';
+            body.appendChild(lb);
+            var lbImg = lb.querySelector('.lb-img'), lbCount = lb.querySelector('.lb-count');
+            function lbShow(i) { var n = curImgs.length; if (!n) return; curIdx = (i + n) % n; lbImg.src = curImgs[curIdx].src; lbImg.alt = curImgs[curIdx].alt; lbCount.textContent = (curIdx + 1) + ' / ' + n; }
+            function lbOpen(i) { lbShow(i); lb.hidden = false; }
+            lb.querySelector('.lb-close').onclick = function () { lb.hidden = true; };
+            lb.querySelector('.lb-prev').onclick = function () { lbShow(curIdx - 1); };
+            lb.querySelector('.lb-next').onclick = function () { lbShow(curIdx + 1); };
+            lb.addEventListener('click', function (e) { if (e.target === lb) lb.hidden = true; });
+            document.addEventListener('keydown', function (e) {
+                if (lb.hidden) return;
+                if (e.key === 'Escape') lb.hidden = true;
+                if (e.key === 'ArrowLeft') lbShow(curIdx - 1);
+                if (e.key === 'ArrowRight') lbShow(curIdx + 1);
+            });
+
+            function cards() { 
+                var all = [].slice.call(grid.querySelectorAll('.product-card[data-pid]'));
+                // 一般模式下，過濾掉被隱藏的商品，不讓訪客按上一頁/下一頁點到
+                if (!document.body.classList.contains('is-editing')) {
+                    all = all.filter(function(c) { return !c.classList.contains('is-hidden-item'); });
+                }
+                return all;
+            }
+            function txt(el) { return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; }
+            function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+
+            function fill(card) {
+                var h3 = card.querySelector('h3');
+                var title = txt(h3);
+                var flavorEl = card.querySelector('.pc-flavor');
+                var descEl = card.querySelector('.pc-desc');
+                var specEl = card.querySelector('.pc-spec');
+                var priceEl = card.querySelector('[data-price]');
+                var badge = card.querySelector('[data-gallery] > span[data-editable]');
+                var slides = [].slice.call(card.querySelectorAll('.gallery-slide'));
+                curImgs = slides.map(function (s) { return { src: s.getAttribute('src'), alt: s.alt || title, contain: s.classList.contains('fit-contain') }; });
+                document.getElementById('pd-crumb').textContent = title;
+                document.getElementById('pd-title').textContent = title;
+                document.getElementById('pd-flavor').textContent = txt(flavorEl);
+                document.getElementById('pd-desc').textContent = txt(descEl);
+                document.getElementById('pd-spec').textContent = txt(specEl);
+                var pr = txt(priceEl);
+                document.getElementById('pd-price').textContent = /^\d/.test(pr) ? 'NT$ ' + pr : pr;
+                var b = document.getElementById('pd-badge'); b.textContent = txt(badge); b.style.display = badge && txt(badge) ? '' : 'none';
+                document.getElementById('pd-inquiry').dataset.item = title;
+
+                var main = document.getElementById('pd-main'), th = document.getElementById('pd-thumbs');
+                main.innerHTML = ''; th.innerHTML = '';
+                var imgs = curImgs.map(function (im, j) {
+                    var el = document.createElement('img');
+                    el.src = im.src; el.alt = im.alt; el.className = 'gallery-slide' + (im.contain ? ' fit-contain' : '') + (j === 0 ? ' is-active' : '');
+                    el.addEventListener('click', function () { lbOpen(cur); });
+                    main.appendChild(el); return el;
+                });
+                var cur = 0, dots = [], cnt = null;
+                function show(i) {
+                    cur = (i + imgs.length) % imgs.length;
+                    imgs.forEach(function (el, j) { el.classList.toggle('is-active', j === cur); });
+                    dots.forEach(function (d, j) { d.classList.toggle('active', j === cur); });
+                    if (cnt) cnt.textContent = (cur + 1) + ' / ' + imgs.length;
+                }
+                if (imgs.length > 1) {
+                    function mkb(cls, html, label, fn) { var x = document.createElement('button'); x.type = 'button'; x.className = cls; x.innerHTML = html; x.setAttribute('aria-label', label); x.addEventListener('click', fn); return x; }
+                    main.appendChild(mkb('g-arrow g-prev', '&#8249;', '上一張', function () { show(cur - 1); }));
+                    main.appendChild(mkb('g-arrow g-next', '&#8250;', '下一張', function () { show(cur + 1); }));
+                    cnt = document.createElement('div'); cnt.className = 'g-count'; main.appendChild(cnt);
+                    curImgs.forEach(function (im, j) {
+                        var t = mkb('pd-thumb' + (j === 0 ? ' active' : ''), '<img src="' + esc(im.src) + '" alt="">', '第 ' + (j + 1) + ' 張', function () { show(j); });
+                        th.appendChild(t); dots.push(t);
+                    });
+                    var x0 = 0;
+                    main.addEventListener('touchstart', function (e) { x0 = e.touches[0].clientX; }, { passive: true });
+                    main.addEventListener('touchend', function (e) { var d = e.changedTouches[0].clientX - x0; if (Math.abs(d) > 40) show(cur + (d < 0 ? 1 : -1)); });
+                    show(0);
+                }
+                var all = cards(), i = all.indexOf(card);
+                function nav(id, c, left) { var a = document.getElementById(id); if (!c) { a.style.visibility = 'hidden'; return; } a.style.visibility = ''; a.href = '#p/' + c.dataset.pid; a.textContent = (left ? '← ' : '') + txt(c.querySelector('h3')) + (left ? '' : ' →'); }
+                nav('pd-prev', all[i - 1], true); nav('pd-next', all[i + 1], false);
+                document.title = title + '｜' + baseTitle;
+            }
+
+            function closeDetail() {
+                body.classList.remove('view-detail');
+                lb.hidden = true;
+                document.getElementById('pd-main').innerHTML = '';
+                document.getElementById('pd-thumbs').innerHTML = '';
+                document.title = baseTitle;
+            }
+            window.closeProductDetail = closeDetail;
+
+            function route() {
+                var m = /^#p\/([a-z0-9_-]+)$/i.exec(location.hash);
+                var card = m && grid.querySelector('.product-card[data-pid="' + m[1] + '"]');
+                
+                // 防止一般模式下透過網址強行訪問被隱藏的商品
+                if (card && card.classList.contains('is-hidden-item') && !document.body.classList.contains('is-editing')) {
+                    location.hash = '';
+                    return;
+                }
+
+                if (card) {
+                    if (!body.classList.contains('view-detail')) savedY = window.scrollY;
+                    fill(card);
+                    body.classList.add('view-detail');
+                    window.scrollTo(0, 0);
+                } else if (body.classList.contains('view-detail')) {
+                    closeDetail();
+                    var t = location.hash.length > 1 && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+                    if (t) t.scrollIntoView(); else window.scrollTo(0, savedY);
+                }
+            }
+            window.addEventListener('hashchange', route);
+
+            grid.addEventListener('click', function (e) {
+                if (body.classList.contains('is-editing') || e.target.closest('.g-ctrl')) return;
+                var card = e.target.closest('.product-card[data-pid]');
+                if (!card) return;
+                if (e.ctrlKey || e.metaKey) {
+                    window.open(window.location.pathname + window.location.search + '#p/' + card.dataset.pid, '_blank');
+                    return; 
+                }
+                e.stopPropagation();
+                e.preventDefault();
+                location.hash = '#p/' + card.dataset.pid;
+            }, true);
+
+            grid.addEventListener('auxclick', function(e) {
+                if (body.classList.contains('is-editing') || e.target.closest('.g-ctrl')) return;
+                var card = e.target.closest('.product-card[data-pid]');
+                if (card && e.button === 1) { 
+                    window.open(window.location.pathname + window.location.search + '#p/' + card.dataset.pid, '_blank');
+                }
+            });
+
+            grid.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !body.classList.contains('is-editing') && e.target.classList.contains('product-card')) {
+                    location.hash = '#p/' + e.target.dataset.pid;
+                }
+            });
+
+            detail.addEventListener('click', function (e) {
+                var a = e.target.closest('[data-pd-back]');
+                if (!a) return;
+                e.preventDefault();
+                var to = a.getAttribute('href');
+                location.hash = (to && to !== '#') ? to : '';
+                if (!location.hash) route();
+            });
+
+            document.getElementById('pd-inquiry').addEventListener('click', function () {
+                var f = document.querySelector('#inquiry-form [name="items"]');
+                if (f && !f.value) f.value = this.dataset.item || '';
+            });
+
+            var _t = window.toggleEditorMode;
+            window.toggleEditorMode = function (en) {
+                if (en && body.classList.contains('view-detail')) {
+                    location.hash = '';
+                    closeDetail();
+                    window.scrollTo(0, savedY);
+                }
+                return _t(en);
+            };
+
+            var _s = window.saveAndExportHtml;
+            window.saveAndExportHtml = function () {
+                closeDetail();
+                return _s();
+            };
+
+            // 確保網頁載入時初始化
+            route();
+            initVisibilityToggles();
+            
+            // 如果網址帶有 ?edit=1 也能解鎖按鈕
+            if (window.location.search.includes('edit=1')) {
+                document.getElementById('btn-open-editor').classList.remove('hidden');
+            }
+        })();
+    </script><div id="dlb" class="lb" hidden="" role="dialog" aria-modal="true"><button type="button" class="lb-btn lb-close" aria-label="關閉">×</button><button type="button" class="lb-btn lb-nav lb-prev" aria-label="上一張">‹</button><img class="lb-img" alt=""><button type="button" class="lb-btn lb-nav lb-next" aria-label="下一張">›</button><div class="lb-count"></div></div>
+</body></html>
